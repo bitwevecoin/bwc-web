@@ -11,18 +11,27 @@ const tokenAbi = [
   "function symbol() view returns (string)"
 ];
 
-let provider, signer, token, oracle;
+let provider;
+let signer;
+let token;
+let oracle;
+
+async function initializeProvider() {
+  if (typeof window.ethereum === "undefined") {
+    alert("MetaMask não foi encontrada. Instale a extensão para continuar.");
+    throw new Error("MetaMask não detectada.");
+  }
+
+  provider = new ethers.providers.Web3Provider(window.ethereum);
+  signer = provider.getSigner();
+  token = new ethers.Contract(bwcTokenAddress, tokenAbi, provider);
+  oracle = new ethers.Contract(oracleAddress, oracleAbi, provider);
+}
 
 async function loadPrice() {
   try {
-    if (!window.ethereum) {
-      document.getElementById("bwcPrice").innerText = "Carteira não detectada";
-      return;
-    }
+    await initializeProvider();
 
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-    oracle = new ethers.Contract(oracleAddress, oracleAbi, provider);
-    
     const price = await oracle.getBWCPriceInUSD();
     const formattedPrice = Number(ethers.utils.formatUnits(price, 18)).toFixed(4);
     document.getElementById("bwcPrice").innerText = `$${formattedPrice}`;
@@ -35,21 +44,13 @@ async function loadPrice() {
 
 async function connectWallet() {
   try {
-    if (!window.ethereum) {
-      alert("MetaMask não detectada. Instale a extensão para continuar.");
-      return;
-    }
+    await initializeProvider();
 
-    provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
-    signer = provider.getSigner();
-
     const address = await signer.getAddress();
+
     document.getElementById("walletAddress").innerText = `Conectado: ${address}`;
     document.getElementById("balanceSection").style.display = "block";
-
-    token = new ethers.Contract(bwcTokenAddress, tokenAbi, signer);
-    oracle = new ethers.Contract(oracleAddress, oracleAbi, provider);
 
     const [decimals, symbol, rawBalance, price] = await Promise.all([
       token.decimals(),
@@ -66,11 +67,15 @@ async function connectWallet() {
     document.getElementById("usdValue").innerText = `$${usdValue}`;
   } catch (error) {
     console.error("Erro ao conectar carteira:", error);
-    alert("Falha ao conectar com a carteira. Verifique se a MetaMask está desbloqueada.");
+    alert("Erro ao conectar a carteira. Verifique se a MetaMask está desbloqueada e conectada à rede correta.");
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("connectButton").addEventListener("click", connectWallet);
+  const connectButton = document.getElementById("connectButton");
+  if (connectButton) {
+    connectButton.addEventListener("click", connectWallet);
+  }
+
   loadPrice();
 });
