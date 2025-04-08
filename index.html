@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BitWeveCoin (BWC)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>BitWeveCoin (BWC)</h1>
+    
+    <div id="price">
+      <h2>Preço atual (USD): <span id="bwcPrice">Carregando...</span></h2>
+    </div>
+
+    <div id="wallet">
+      <button id="connectButton">Conectar MetaMask</button>
+      <p id="walletAddress"></p>
+    </div>
+
+    <div id="balanceSection" style="display: none;">
+      <h3>Seu saldo: <span id="bwcBalance">--</span> BWC</h3>
+      <h4>Valor em USD: <span id="usdValue">--</span></h4>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
